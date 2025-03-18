@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 public class Main {
@@ -44,7 +45,7 @@ public class Main {
                 for (Message mess : messages) { // accessing every message from a particular channel
                     if (mess.getContentDisplay().equals("Day " + calculateDateDiff())) {  // fail-fast condition for if the message had already been sent today
                         try {
-                            Thread.sleep(1000*60*60*24); // make this process sleep for 24hours in order to avoid consuming cpu cycles?
+                            Thread.sleep(1000*60*60); // make this process sleep for until 1h in order to avoid unlimited if checks
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
