@@ -2,10 +2,15 @@ package org.example.progresstracker;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 
 public class EventListener extends ListenerAdapter {
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        event.reply(event.getCommandString().substring(event.getCommandString().indexOf("content:")+9)).queue();
+    }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
