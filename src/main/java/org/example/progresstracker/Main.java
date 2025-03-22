@@ -7,13 +7,19 @@ import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
-import java.time.LocalDate;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
+
+    private static final String DAILY_ACHIEVEMENT_CHANNEL_ID = "1351566846624534559"; //Add your channel ID here
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static final AtomicInteger daysCount = new AtomicInteger(8); // Initial count
+
     public static void main(String[] args) {
         runBot();
     }
@@ -25,48 +31,40 @@ public class Main {
                     .build();                                       // we also had to enable permissions on discord through application portal.
 
             jda.awaitReady();   // no clue what this is but it was recommended
-            sendRepeatedMessage(jda); // the daily message method, maybe a more suitable method name later?
 
+            sendRepeatedMessage(jda); // the daily message method, maybe a more suitable method name later
             jda.addEventListener(new EventListener()); // listens to user interaction events from the server
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     private static void sendRepeatedMessage(JDA jda) {
-        List<TextChannel> channels = jda.getTextChannelsByName("daily-achievement", true); // gets daily-achievement channel, but it only returns a list.
-                                                                                                                // could do .getFirst() and store it in a TextChannel variable to make the method less verbose
+        TextChannel dailyAchievementChannel = jda.getTextChannelById(DAILY_ACHIEVEMENT_CHANNEL_ID); //update your channel ID in CHANNEL_ID variable
 
-        List<Message> messages = MessageHistory.getHistoryFromBeginning(channels.getFirst()).complete().getRetrievedHistory(); // get a reversed list of message history in a channel
+        if (dailyAchievementChannel == null) {//If the channel does not exist, it throws the error
+            throw new IllegalArgumentException("Channel not found!");
+        }
 
+        Runnable task = () -> dailyAchievementChannel.sendMessage("Day: "+daysCount.getAndIncrement()).queue();
 
-        new Thread(() -> { // in order to avoid trapping the main thread
-            while (true) { // runs as long as the bot is on
-                for (Message mess : messages) { // accessing every message from a particular channel
-                    if (mess.getContentDisplay().equals("Day " + calculateDateDiff())) {  // fail-fast condition for if the message had already been sent today
-                        try {
-                            Thread.sleep(1000*60*60); // make this process sleep for until 1h in order to avoid unlimited if checks
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
+        long initialDelay = getInitialDelay(0, 25); // Schedule at 8:00 AM
+        long period = 24 * 60 * 60; // 24 hours in seconds
 
-                if (LocalDateTime.now().getHour() == 8) { // check if the time is 8am, does not check the minute because we don't have a 24/7 server and I can't always be punctual irl.
-                    channels.getFirst().sendMessage("Day " + calculateDateDiff()).queue();
-                    try {
-                        Thread.sleep(1000*60*60*24); // eventually fix busy-waiting
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }).start();
+        scheduler.scheduleAtFixedRate(task, initialDelay, period, TimeUnit.SECONDS); // Execute task after specific interval of time
     }
 
-    private static long calculateDateDiff() {
-        LocalDate startDate = LocalDate.parse("2025-03-15"); // start date of this bot
+    private static long getInitialDelay(int hour, int minute) {
 
-        return ChronoUnit.DAYS.between(startDate, LocalDateTime.now()); // calculates the days since startDate by retrieving today's date
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextRun = now.withHour(hour).withMinute(minute).withSecond(0);
+
+        if (now.isAfter(nextRun)) {
+            // If the time has already passed today, schedule for tomorrow
+            nextRun = nextRun.plusDays(1);
+        }
+
+        return Duration.between(now, nextRun).getSeconds();//returning the time difference between now vs the give time the daily message needs to be send
     }
 }
