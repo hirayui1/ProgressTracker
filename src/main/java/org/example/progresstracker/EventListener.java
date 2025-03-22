@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class EventListener extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        event.reply(event.getCommandString().substring(event.getCommandString().indexOf("content:")+9)).queue();
+        event.reply(event.getCommandString().substring(event.getCommandString().indexOf(":")+1)).queue();
     }
 
     @Override
