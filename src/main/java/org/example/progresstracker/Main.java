@@ -2,8 +2,6 @@ package org.example.progresstracker;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
@@ -49,7 +47,7 @@ public class Main {
 
         Runnable task = () -> dailyAchievementChannel.sendMessage("Day: "+daysCount.getAndIncrement()).queue();
 
-        long initialDelay = getInitialDelay(0, 25); // Schedule at 8:00 AM
+        long initialDelay = getInitialDelay(8, 0); // Schedule at 8:00 AM
         long period = 24 * 60 * 60; // 24 hours in seconds
 
         scheduler.scheduleAtFixedRate(task, initialDelay, period, TimeUnit.SECONDS); // Execute task after specific interval of time
