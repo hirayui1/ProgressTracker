@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final AtomicInteger daysCount = new AtomicInteger(8); // Initial count
+    private static final AtomicInteger daysCount = new AtomicInteger(17); // Initial count
 
     public static void main(String[] args) {
         runBot();
