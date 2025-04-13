@@ -6,7 +6,9 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,8 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final AtomicInteger daysCount = new AtomicInteger(17); // Initial count
-
     public static void main(String[] args) {
         runBot();
     }
@@ -31,7 +31,7 @@ public class Main {
 
             sendRepeatedMessage(jda); // the daily message method, maybe a more suitable method name later
             jda.addEventListener(new EventListener()); // listens to user interaction events from the server
-
+            System.out.println("Day: "+calculateDateDiff());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -47,7 +47,7 @@ public class Main {
             throw new IllegalArgumentException("Channel not found!");
         }
 
-        Runnable task = () -> dailyAchievementChannel.sendMessage("Day: "+daysCount.getAndIncrement()).queue();
+        Runnable task = () -> dailyAchievementChannel.sendMessage("Day: "+calculateDateDiff()).queue();
 
         long initialDelay = getInitialDelay(8, 0); // Schedule at 8:00 AM
         long period = 24 * 60 * 60; // 24 hours in seconds
@@ -66,5 +66,10 @@ public class Main {
         }
 
         return Duration.between(now, nextRun).getSeconds();//returning the time difference between now vs the give time the daily message needs to be send
+    }
+
+    private static long calculateDateDiff() {
+        LocalDate startDate = LocalDate.parse("2025-03-15"); // start date of this bot
+        return ChronoUnit.DAYS.between(startDate, LocalDateTime.now()); // calculates the days since startDate by retrieving today's date
     }
 }
