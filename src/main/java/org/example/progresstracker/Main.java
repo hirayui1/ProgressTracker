@@ -7,14 +7,13 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
-
-    private static final String DAILY_ACHIEVEMENT_CHANNEL_ID = "1351566846624534559"; //Add your channel ID here
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static final AtomicInteger daysCount = new AtomicInteger(8); // Initial count
 
@@ -39,7 +38,10 @@ public class Main {
     }
 
     private static void sendRepeatedMessage(JDA jda) {
-        TextChannel dailyAchievementChannel = jda.getTextChannelById(DAILY_ACHIEVEMENT_CHANNEL_ID); //update your channel ID in CHANNEL_ID variable
+
+        List<TextChannel> channels = jda.getTextChannelsByName("daily-achievement", true);
+
+        TextChannel dailyAchievementChannel = channels.get(0);
 
         if (dailyAchievementChannel == null) {//If the channel does not exist, it throws the error
             throw new IllegalArgumentException("Channel not found!");
