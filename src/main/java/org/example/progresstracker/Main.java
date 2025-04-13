@@ -31,7 +31,7 @@ public class Main {
 
             sendRepeatedMessage(jda); // the daily message method, maybe a more suitable method name later
             jda.addEventListener(new EventListener()); // listens to user interaction events from the server
-            System.out.println("Day: "+calculateDateDiff());
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -68,7 +68,7 @@ public class Main {
         return Duration.between(now, nextRun).getSeconds();//returning the time difference between now vs the give time the daily message needs to be send
     }
 
-    private static long calculateDateDiff() {
+    private static long calculateDateDiff() {//using this function instead of using atomic integer and increment
         LocalDate startDate = LocalDate.parse("2025-03-15"); // start date of this bot
         return ChronoUnit.DAYS.between(startDate, LocalDateTime.now()); // calculates the days since startDate by retrieving today's date
     }
