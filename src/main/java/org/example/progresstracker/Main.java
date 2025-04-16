@@ -3,6 +3,7 @@ package org.example.progresstracker;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.time.Duration;
@@ -14,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static net.dv8tion.jda.api.interactions.commands.OptionType.STRING;
 
 public class Main {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -28,20 +31,30 @@ public class Main {
                     .build();                                       // we also had to enable permissions on discord through application portal.
 
             jda.awaitReady();   // no clue what this is but it was recommended
-
             sendRepeatedMessage(jda); // the daily message method, maybe a more suitable method name later
-            jda.addEventListener(new EventListener()); // listens to user interaction events from the server
 
+            jda.upsertCommand(
+                    Commands.slash("say", "Makes the bot say what you tell it to")
+                            .addOption(STRING, "content", "What the bot should say", true) // Accepting a user input
+            ).queue(); // adds the say command, the actual event once this is called is handled by EventListener onSlashCommandInteraction
+
+            // listens to user interaction events from the server
+            jda.addEventListener(new EventListener());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     private static void sendRepeatedMessage(JDA jda) {
-
+        // gets daily-achievement channel, but it only returns a list.
+        // could do .getFirst() and store it in a TextChannel variable to make the method less verbose
         List<TextChannel> channels = jda.getTextChannelsByName("daily-achievement", true);
 
-        TextChannel dailyAchievementChannel = channels.get(0);
+        if (channels.isEmpty()) {//Null safety check
+            throw new IllegalArgumentException("Channel not found!");
+        }
+
+        TextChannel dailyAchievementChannel = channels.getFirst();
 
         if (dailyAchievementChannel == null) {//If the channel does not exist, it throws the error
             throw new IllegalArgumentException("Channel not found!");
